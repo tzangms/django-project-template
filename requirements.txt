@@ -3,3 +3,4 @@ django-userena==1.1.2
 django-social-auth==0.7.7
 pillow==1.7.7
 mysql-python==1.2.3
+south==0.7.6
