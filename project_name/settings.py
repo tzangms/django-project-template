@@ -2,6 +2,9 @@
 import os
 ROOT_PATH = os.path.dirname(__file__)
 
+import djcelery
+djcelery.setup_loader()
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -11,15 +14,9 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+import dj_database_url
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '{{ project_name }}',                      # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-    }
+    'default': dj_database_url.config(default='mysql://root@localhost/{{ project_name }}')
 }
 
 # Local time zone for this installation. Choices can be found here:
@@ -90,12 +87,16 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'johnny.middleware.LocalStoreClearMiddleware',
+    'johnny.middleware.QueryCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'pagination.middleware.PaginationMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 ROOT_URLCONF = '{{ project_name }}.urls'
@@ -114,6 +115,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.i18n",
     "django.core.context_processors.media",
     "django.core.context_processors.static",
+    "django.core.context_processors.request",
     "django.core.context_processors.tz",
     "django.contrib.messages.context_processors.messages"
 )
@@ -126,9 +128,14 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'django_extensions',
+    'debug_toolbar',
     'south',
+    'pagination',
     'userena',
     'accounts',
+    'storages',
+    'djcelery',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
@@ -180,3 +187,30 @@ AUTH_PROFILE_MODULE = 'accounts.Profile'
 LOGIN_REDIRECT_URL = '/accounts/%(username)s/'
 LOGIN_URL = '/accounts/signin/'
 LOGOUT_URL = '/accounts/signout/'
+
+# ===================
+# django-storages
+# ===================
+
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+AWS_STORAGE_BUCKET_NAME = ''
+AWS_HEADERS = {
+    'Expires': 'Thu, 15 Apr 2020 20:00:00 GMT',
+    'Cache-Control': 'max-age=86400',
+}
+
+# ================
+# johnny-cache
+# ================
+
+"""
+CACHES = {
+    'default': {
+        'BACKEND': 'johnny.backends.memcached.PyLibMCCache',
+        'LOCATION': ['127.0.0.1:11211'],
+        'JOHNNY_CACHE': True,
+    }
+}
+JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_myproj'
+"""
